@@ -134,19 +134,6 @@ p_BOOL hivemind_from_gtk(GtkWidget* bu_hivemind) {
 }
 
 
-GtkWidget* create_interface_list() {
-
-    GtkWidget* combo_dev = gtk_combo_box_text_new();
-    char* buffer = (char*) malloc( sizeof(char) * 512 );
-
-    int i;
-    for (i=0; i<get_custom_device_count(); i++) {
-        strcpy(buffer, get_custom_string_from_device( i ));
-        gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT(combo_dev), buffer );
-    }
-
-    return combo_dev;
-}
 
 
 p_BOOL push_hivemind_button(GtkWidget* bu_hivemind) {
@@ -193,60 +180,88 @@ p_BOOL fire_from_gtk(GtkWidget* bu_fire) {
     return ret;
 }
 
-p_BOOL thread_autodetect( GtkWidget* b_detect )  {
 
-    gtk_container_remove( GTK_CONTAINER(b_detect), GTK_WIDGET(bu_auto_detect) );
-    gtk_container_add( GTK_CONTAINER(b_detect), GTK_WIDGET(load_spinner) );
-    gtk_spinner_start( GTK_SPINNER(load_spinner) );
-    gtk_widget_show( GTK_WIDGET(load_spinner) );
+#ifdef SUPER_LOIC
 
-    int my_index = -1;
-    my_index = auto_detect_custom_device();
+    GtkWidget* create_interface_list() {
 
-    if ( my_index != -1 ) {
+        GtkWidget* combo_dev = gtk_combo_box_text_new();
+        char* buffer = (char*) malloc( sizeof(char) * 512 );
 
-        gtk_combo_box_set_active ( GTK_COMBO_BOX(combo_devices), my_index );
+        int i;
+        for (i=0; i<get_custom_device_count(); i++) {
+            strcpy(buffer, get_custom_string_from_device( i ));
+            gtk_combo_box_text_append_text ( GTK_COMBO_BOX_TEXT(combo_dev), buffer );
+        }
 
-        gtk_spinner_stop( GTK_SPINNER(load_spinner) );
-        gtk_container_remove( GTK_CONTAINER(b_detect), GTK_WIDGET(load_spinner) );
-        gtk_container_add( GTK_CONTAINER(b_detect), GTK_WIDGET(bu_auto_detect) );
+        return combo_dev;
+    }
+
+
+    p_BOOL thread_autodetect( GtkWidget* b_detect )  {
+
+        gtk_container_remove( GTK_CONTAINER(b_detect), GTK_WIDGET(bu_auto_detect) );
+        gtk_container_add( GTK_CONTAINER(b_detect), GTK_WIDGET(load_spinner) );
+        gtk_spinner_start( GTK_SPINNER(load_spinner) );
+        gtk_widget_show( GTK_WIDGET(load_spinner) );
+
+        int my_index = -1;
+        my_index = auto_detect_custom_device();
+
+        if ( my_index != -1 ) {
+
+            gtk_combo_box_set_active ( GTK_COMBO_BOX(combo_devices), my_index );
+
+            gtk_spinner_stop( GTK_SPINNER(load_spinner) );
+            gtk_container_remove( GTK_CONTAINER(b_detect), GTK_WIDGET(load_spinner) );
+            gtk_container_add( GTK_CONTAINER(b_detect), GTK_WIDGET(bu_auto_detect) );
+
+
+            return TRUE;
+
+        }
+
+        return FALSE;
+
+    }
+
+
+
+    p_BOOL select_device( GtkWidget* combo_devices ) {
+
+
+        int index = gtk_combo_box_get_active ( GTK_COMBO_BOX(combo_devices) );
+
+        if ( index >= 0 ) {
+
+            char* buffer = (char*) malloc( sizeof(char) * 32 );
+            strcpy(buffer,get_ip_from_custom_device( index ));
+
+            gtk_entry_buffer_set_text( t_source_ip, buffer, strlen(buffer) );
+
+            printf("Changed to %s\n",buffer);
+        }
+        else
+            return FALSE;
 
 
         return TRUE;
 
     }
-
-    return FALSE;
-
-}
+#endif
 
 p_BOOL push_auto_button(GtkWidget* bu_autodetect, GtkWidget* b_detect) {
+
+
+#ifdef SUPER_LOIC
+
 
     pthread_t thread_detect;
     pthread_create(&thread_detect,NULL,(void*)thread_autodetect,b_detect);
 
+#endif
 
 
-    return TRUE;
-
-}
-
-p_BOOL select_device( GtkWidget* combo_devices ) {
-
-
-    int index = gtk_combo_box_get_active ( GTK_COMBO_BOX(combo_devices) );
-
-    if ( index >= 0 ) {
-
-        char* buffer = (char*) malloc( sizeof(char) * 32 );
-        strcpy(buffer,get_ip_from_custom_device( index ));
-
-        gtk_entry_buffer_set_text( t_source_ip, buffer, strlen(buffer) );
-
-        printf("Changed to %s\n",buffer);
-    }
-    else
-        return FALSE;
 
 
     return TRUE;
@@ -376,12 +391,14 @@ p_BOOL push_fire_button(GtkWidget* bu_fire) {
                 setWaitEnabled( gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(cb_waitForReplySLOW_HTTP) ) );
                 setGzipEnabled( gtk_toggle_button_get_active( GTK_TOGGLE_BUTTON(cb_useGzipSLOW_HTTP) ) );
                 break;
+#ifdef SUPER_LOIC
             case SUDP :
                 setSpoofedIp( gtk_entry_buffer_get_text(t_source_ip) );
                 break;
             case SYN :
                 setSpoofedIp( gtk_entry_buffer_get_text(t_source_ip) );
                 break;
+#endif
             default :
                 break;
         }
@@ -585,7 +602,6 @@ p_BOOL setOptionPanel(int method) {
 
 
         g_signal_connect( G_OBJECT(bu_auto_detect), "clicked", G_CALLBACK(push_auto_button), b_detect );
-        g_signal_connect( G_OBJECT( combo_devices ), "changed", G_CALLBACK(select_device), NULL);
 
 
 
@@ -788,7 +804,9 @@ GtkWidget* b_Status = NULL;
     gtk_rc_parse("gtkrc");
 
 
+#ifdef SUPER_LOIC
     generate_devices_list();
+#endif
 
     t_target = gtk_entry_buffer_new("",0);
     t_port = gtk_entry_buffer_new("80",2);
@@ -1062,10 +1080,17 @@ GtkWidget* b_Status = NULL;
 
     load_spinner = gtk_spinner_new();
 
+
+#ifdef SUPER_LOIC
+
     combo_devices = create_interface_list();
+    g_signal_connect( G_OBJECT( combo_devices ), "changed", G_CALLBACK(select_device), NULL);
+    g_object_ref(combo_devices);
+#endif
+
+
     bu_auto_detect = gtk_button_new_with_label("Auto-Detect");
 
-    g_object_ref(combo_devices);
     g_object_ref(bu_auto_detect);
     g_object_ref(load_spinner);
 
