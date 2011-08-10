@@ -10,6 +10,9 @@
     #include <time.h>
     #include <stdlib.h>
 
+    #ifdef GTK_GUI
+        #include "gtk_module.h"
+    #endif
     #ifdef SUPER_LOIC
         /* Super mode */
 

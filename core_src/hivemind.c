@@ -230,7 +230,7 @@ int start_hivemind(const char* server, int port, const char* chan) {
     if (port > 0 && server != NULL) {
 
         if (chan == NULL) {
-            loic_error("Error : Bad channel.\n",CONSOLE);
+            loic_error("Error : Bad channel.\n", GRAVE);
         }
 
         irc_callbacks_t	callbacks;
@@ -295,8 +295,11 @@ int start_hivemind(const char* server, int port, const char* chan) {
         irc_run (s);
 
     }
-    else
-        loic_error("Bad Hivemind params.",CONSOLE);
+    else {
+        loic_error("Bad Hivemind params.", MINOR);
+
+        return -2;
+    }
 
     return 0;
 

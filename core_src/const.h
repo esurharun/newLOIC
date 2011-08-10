@@ -24,6 +24,8 @@
 
     #define CONSOLE 0
     #define IRC_COMMAND 1
+    #define MINOR 2
+    #define GRAVE 3
 
     #define EMPTY -1
     #define READY 0

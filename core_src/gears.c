@@ -2,14 +2,22 @@
 
 
 // Custom error, depending on source command.
-void loic_error(char* message, int from) {
+void loic_error(const char* message, int ind) {
 
     printf("%s\n",message);
 
-    if (from == CONSOLE) {
-        print_help();
-        exit(errno);
+#ifdef GTK_GUI
+    if ( ind == GRAVE ) {
+        display_popup(message);
     }
+    else if ( ind == MINOR ) {
+        status_message(message);
+    }
+#else
+    print_help();
+    exit(errno);
+#endif
+
 }
 
 // Thread sleep during x ms
@@ -137,10 +145,11 @@ int s_connect(SOCKET s, char* target, int port) {
 
     hostinfo = gethostbyname(target); // Host informations
 
-    if (hostinfo == NULL) // Unknown host
-    {
-        printf("Unknown host %s.\n", target);
-        exit(EXIT_FAILURE);
+    if (hostinfo == NULL) {
+        char buffer[256];
+        sprintf(buffer,"Unknown host %s.", target);
+        loic_error( buffer, MINOR );
+        return 2;
     }
 
     sin.sin_addr = *(IN_ADDR *) hostinfo->h_addr; // Adress
@@ -148,7 +157,7 @@ int s_connect(SOCKET s, char* target, int port) {
     sin.sin_family = AF_INET;
 
     if(connect(s,(SOCKADDR *) &sin, sizeof(SOCKADDR)) == SOCKET_ERROR) {
-        perror("connect()");
+        loic_error("Unable to connect.", MINOR);
         return 1;
     }
 
@@ -163,8 +172,8 @@ int s_send(SOCKET s, char* msg) {
 
 
     if( send(s, buffer, strlen(buffer), 0) < 0 ) {
-        perror("send()");
-        exit(errno);
+        loic_error("Error while sending data.", MINOR);
+
     }
 
     return 1;
@@ -175,8 +184,7 @@ void s_recv(SOCKET s, char* buffer, int size) {
 
 
     if ( (n = recv(s, buffer, size - 1, 0)) < 0 ) {
-        perror("recv()");
-        exit(errno);
+        loic_error("Error while receiving data.", MINOR);
     }
 
     buffer[n] = '\0';

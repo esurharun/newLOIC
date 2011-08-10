@@ -2,11 +2,17 @@
 
     #define H_GEARS_H
 
+
+
+
     #include "const.h"
     #include "math.h"
 
     #include <time.h>
 
+    #ifdef GTK_GUI
+        #include "gtk_module.h"
+    #endif
 
     int s_connect(SOCKET s, char* target, int port);
     int s_send(SOCKET s, char* msg);
@@ -27,7 +33,7 @@
     char* p_host_from_url(char* url);
     int p_substring(const char* str_in, char* str_out, size_t begin, size_t len);
 
-    void loic_error(char* message, int from);
+    void loic_error(const char* message, int from);
     void print_help();
 
     void init(void);

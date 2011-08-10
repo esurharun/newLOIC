@@ -2,6 +2,10 @@
 
     #define H_CANON_H
 
+    #ifdef GTK_GUI
+        #include "gtk_module.h"
+    #endif
+
 
     #include <pthread.h>
 

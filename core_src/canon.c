@@ -71,10 +71,10 @@ int start_canon() {
 
             }
             else
-                loic_error("You have not selected a target", CONSOLE);
+                loic_error("You have not selected a target", GRAVE);
         }
         else
-            loic_error("Not ready", CONSOLE);
+            loic_error("Not ready", GRAVE);
 
 
     return 2;
@@ -152,7 +152,7 @@ int http_fire(int id) {
         strcat(sent_data,getUdpMessage());
 
         if( send(s, sent_data, strlen(sent_data), 0) < 0 ) {
-            printf("Connection error.\n");
+            loic_error("Unable to connect.", GRAVE);
             setStatus(STOPPING);
             return -1;
         }
@@ -205,7 +205,7 @@ int http_fire_classic(int id) {
         strcat(sent_data,getUdpMessage());
 
         if( send(s, sent_data, strlen(sent_data), 0) < 0 ) {
-            printf("Connection error.\n");
+            loic_error("Unable to connect.", GRAVE);
             setStatus(STOPPING);
             return -1;
         }
@@ -242,7 +242,9 @@ int udp_fire(int id) {
 
     hostinfo = gethostbyname(hostname);
     if ( hostinfo == NULL ) {
-        printf ("Unknown host %s.\n", hostname);
+        char* buffer = (char*) malloc( sizeof(char) * 256 );
+        sprintf(buffer,"Unknown host %s.", hostname);
+        loic_error( buffer, MINOR );
         setStatus(STOPPING);
         return -1;
     }
@@ -272,7 +274,7 @@ int udp_fire(int id) {
 
 
         if( sendto(s, sent_data, strlen(sent_data), 0, (SOCKADDR*)&to, tosize) < 0 ) {
-            printf("Connection error.\n");
+            loic_error("Unable to connect.", GRAVE);
             setStatus(STOPPING);
             return -1;
         }
@@ -284,8 +286,7 @@ int udp_fire(int id) {
         if ( isWaitEnabled() == TRUE ) {
             char received_data[1024];
             if( (n = recvfrom((SOCKET)s, received_data, sizeof(received_data) - 1, 0, (SOCKADDR*)&to, &tosize)) < 0 ) {
-                loic_error("recvfrom()",CONSOLE);
-                printf("Connection error.\n");
+                loic_error("No response from host.", MINOR);
             }
         }
 
@@ -335,7 +336,7 @@ int tcp_fire(int id) {
             strcat(sent_data,random_string());
 
         if( send(s, sent_data, strlen(sent_data), 0) < 0 ) {
-            printf("Connection error.\n");
+            loic_error("Unable to connect.", GRAVE);
             setStatus(STOPPING);
             return -1;
 
@@ -402,7 +403,7 @@ int slowloris_fire(int id) {
         strcat(sent_data,getUdpMessage());
 
         if( send(s, sent_data, strlen(sent_data), 0) < 0 ) {
-            printf("Connection error.\n");
+            loic_error("Unable to connect.", GRAVE);
             setStatus(STOPPING);
             return -1;
         }
@@ -454,8 +455,9 @@ int raw_test(int id) {
         strcat(sent_data,getUdpMessage());
 
         if( send(s, sent_data, strlen(sent_data), 0) < 0 ) {
-            printf("Connection error.\n");
-            exit(errno);
+            loic_error("Unable to connect.", GRAVE);
+            setStatus(STOPPING);
+            return -1;
         }
         else
             packet_count++;

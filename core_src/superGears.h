@@ -43,5 +43,11 @@
 
     void print_custom_device_list();
 
+    int generate_devices_list();
+    int get_custom_device_count();
+    char* get_ip_from_custom_device( int my_index );
+    int get_myindex_from_pcapindex( int pcap_index );
+    char* get_custom_string_from_device( int my_index );
+
 
 #endif

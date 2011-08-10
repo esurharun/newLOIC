@@ -13,10 +13,17 @@
         #define PCAP_SRC_IF_STRING "rpcap://"
         #define PCAP_ERRBUF_SIZE 256
     #endif
+
+    #ifdef GTK_GUI
+        #include "gtk_module.h"
+    #endif
+
+int auto_detect_custom_device();
+
 int charge_superCanon();
 int start_superCanon();
-int test_superFire(int id) ;
-int syn_superFire(int id) ;
+int test_superFire(int id);
+int syn_superFire(int id);
 int udp_superFire(int id);
 
 #endif
