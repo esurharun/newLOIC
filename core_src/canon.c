@@ -11,13 +11,13 @@
 
  Utilité ?
 
- 1. Tests de sécurité sur votre réseau.
+ 1. Tests de securite sur votre réseau.
  2. Faire chier votre petit frère / petite soeur.
- 3. Faire de la cyber-manifestation (pour le jour où ça sera légalisé, ce qui n'est pas le cas en ce jour du 13 Aout 2011)
- (car, oui, l'utilisation de l'outil sur des infrastructures extérieures est illégale, de même que la fonction d'usurpation d'IP)
+ 3. Faire de la cyber-manifestation (pour le jour ou ce sera legalise, ce qui n'est pas le cas en ce jour du 13 Aout 2011)
+ (car, oui, l'utilisation de l'outil sur des infrastructures extérieures est illégale, de meme que la fonction d'usurpation d'IP)
 
 
- [ Si vous ne nous laissez pas rêver, nous ne vous laisserons pas dormir. ]
+ [ Si vous ne nous laissez pas rever, nous ne vous laisserons pas dormir. ]
 
  */
 
