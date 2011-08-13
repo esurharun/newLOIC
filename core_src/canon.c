@@ -1,11 +1,12 @@
 /*
 
- NOTE :
+ NOTE (fr)
  Pourquoi ce programme ?
 
  1. Je voulais apprendre le C.
- 2. GTK, je connaissais pas, mais on m'en avais dit du bien.
+ 2. GTK, je connaissais pas, mais on m'en avais dit du bien, alors il m'a fallu essayer aussi.
  3. Très peu de programmes << avancés >> possèdent des interfaces utilisateurs. Le but est de rendre accessible de type de programmes aux newbies.
+ A terme, j'aimerais que l'outil intègre encore davantage de fonctions, toujours dans cet esprit "accessible".
 
 
  Utilité ?
@@ -13,8 +14,10 @@
  1. Tests de sécurité sur votre réseau.
  2. Faire chier votre petit frère / petite soeur.
  3. Faire de la cyber-manifestation (pour le jour où ça sera légalisé, ce qui n'est pas le cas en ce jour du 13 Aout 2011)
- (car, oui, l'utilisation de l'outil sur des infrastructures extérieures est illégale)
+ (car, oui, l'utilisation de l'outil sur des infrastructures extérieures est illégale, de même que la fonction d'usurpation d'IP)
 
+
+ [ Si vous ne nous laissez pas rêver, nous ne vous laisserons pas dormir. ]
 
  */
 
