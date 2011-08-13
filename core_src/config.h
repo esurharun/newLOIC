@@ -179,6 +179,12 @@ typedef struct {
     p_BOOL useSlowGet();
     p_BOOL isSuperMode();
 
+    p_BOOL isInHivemind();
+    void imInHivemind( p_BOOL yesornot );
+
+
+    int getNbPacketsSent(int nt);
+    int setNbPacketsSent(int nt, int nbp);
 
     #ifdef SUPER_LOIC
         /* Super Mode */

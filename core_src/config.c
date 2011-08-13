@@ -5,11 +5,40 @@ main_config_t main_config;
 network_config_t network_config;
 simple_pkt_t g_pattern_packet;
 
+p_BOOL hivemind_mode = FALSE;
 
+int nbPacketsSent[1024];
 
 
 pthread_mutex_t c_mutex = PTHREAD_MUTEX_INITIALIZER;
+pthread_mutex_t pks_mutex = PTHREAD_MUTEX_INITIALIZER;
 
+
+int getNbPacketsSent(int nt) {
+
+    pthread_mutex_lock(&pks_mutex);
+        int nb = nbPacketsSent[nt];
+    pthread_mutex_unlock(&pks_mutex);
+
+    return nb;
+}
+
+int setNbPacketsSent(int nt, int nbp) {
+
+    pthread_mutex_lock(&pks_mutex);
+        nbPacketsSent[nt] = nbp;
+    pthread_mutex_unlock(&pks_mutex);
+
+    return TRUE;
+}
+
+p_BOOL isInHivemind() {
+    return hivemind_mode;
+}
+
+void imInHivemind( p_BOOL yesornot ) {
+    hivemind_mode = yesornot;
+}
 
 int config_hivemind(const char** arguments, int nb) {
 
@@ -117,7 +146,7 @@ int config_from_args_irc(const char** arguments, int nb, int from) {
 
             /* NEW */
             else if ( p_strcmpi(key,"TIMEOUT") == 0  ) {
-                setTimeout(atoi(value));
+                setTimeout( atoi(value) );
             }
             /* END NEW */
 
@@ -153,20 +182,29 @@ int config_from_args_irc(const char** arguments, int nb, int from) {
         else if (i == nb-1 && key != NULL) {
 
             if ( p_strcmpi(key,"START") == 0 || p_strcmpi(key,"GO") == 0 ) {
-                if (getStatus() == READY) {
-                    pthread_t canon_thread;
-                    pthread_create(&canon_thread,NULL,(void*)thread_canon,(void*)NULL);
+                if ( getStatus() == READY ) {
+                    #ifdef GTK_GUI
+                        sim_push_fire_button();
+                    #else
+                        pthread_t canon_thread;
+                        pthread_create(&canon_thread,NULL,(void*)thread_canon,(void*)NULL);
+                    #endif
 
                 }
                 else
-                    loic_error("Already firing",from);
+                    loic_error("Already firing", MINOR);
             }
 
             else if ( p_strcmpi(key,"STOP") == 0 || p_strcmpi(key,"PAUSE") == 0 ) {
-                if (getStatus() == FIRING)
-                    stop_canon();
+                if (getStatus() == FIRING) {
+                    #ifdef GTK_GUI
+                        sim_push_fire_button();
+                    #else
+                        stop_canon();
+                    #endif
+                }
                 else
-                    loic_error("Not firing",from);
+                    loic_error("Not firing", MINOR);
 
             }
 

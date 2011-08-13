@@ -201,7 +201,8 @@ void event_connect (irc_session_t* session, const char* event, const char* origi
 
         irc_cmd_join (session, ctx->channel, 0);
 
-        setStatus(HIVEMIND_READY);
+        imInHivemind( TRUE );
+        setStatus(READY);
 
 
 }
@@ -217,90 +218,113 @@ void event_privmsg (irc_session_t* session, const char* event, const char* origi
 }
 
 int disconnect() {
+
     irc_cmd_quit (s, "Avec raison");
+    imInHivemind( FALSE );
+    setStatus( READY );
 
     return 0;
 }
 
 int start_hivemind(const char* server, int port, const char* chan) {
 
-    setStatus(HIVEMIND_CONNECTING);
 
 
-    if (port > 0 && server != NULL) {
+    if ( isHostname( server ) ) {
 
-        if (chan == NULL) {
-            loic_error("Error : Bad channel.\n", GRAVE);
+        setStatus(HIVEMIND_CONNECTING);
+
+        imInHivemind( TRUE );
+
+
+        if (port > 0 && server != NULL) {
+
+            if (chan == NULL) {
+                loic_error("Error : Bad channel.\n", GRAVE);
+            }
+
+            irc_callbacks_t	callbacks;
+            irc_ctx_t ctx;
+
+
+
+            //printf ("Usage: %s <server> <nick> <channel>\n", argv[0]);
+
+            memset (&callbacks, 0, sizeof(callbacks));
+
+            callbacks.event_connect = event_connect;
+            callbacks.event_join = event_join;
+            callbacks.event_nick = dump_event;
+            callbacks.event_quit = dump_event;
+            callbacks.event_part = dump_event;
+            callbacks.event_mode = dump_event;
+            callbacks.event_topic = dump_event;
+            callbacks.event_kick = dump_event;
+            callbacks.event_channel = event_channel;
+            callbacks.event_privmsg = event_privmsg;
+            callbacks.event_numeric = event_numeric;
+
+
+            callbacks.event_notice = dump_event;
+
+            callbacks.event_invite = dump_event;
+
+            callbacks.event_umode = dump_event;
+            callbacks.event_ctcp_rep = dump_event;
+            callbacks.event_ctcp_action = dump_event;
+            callbacks.event_unknown = dump_event;
+
+            /*
+            callbacks.event_dcc_chat_req = irc_event_dcc_chat;
+            callbacks.event_dcc_send_req = irc_event_dcc_send;
+            */
+
+
+            s = irc_create_session (&callbacks);
+
+            if ( !s ) {
+                    printf ("Could not create session\n");
+                    return 1;
+            }
+
+            ctx.channel = (char*) malloc( sizeof(char) * (strlen(chan) + 1) );
+            strcpy(ctx.channel,chan);
+
+            ctx.nick = "Imnothere";
+            irc_set_ctx (s, &ctx);
+
+            printf("Connecting to %s with port %d ...\n",server,port);
+
+            if ( irc_connect(s, server, port, 0, "Imnothere", 0, 0) ) {
+                    loic_error ( "IRC : Could not connect", GRAVE );
+                    imInHivemind( FALSE );
+
+                    return 1;
+            }
+
+            printf("Connected. Listening for !command messages ..\n");
+
+            irc_run (s);
+
+        }
+        else {
+            loic_error("Bad Hivemind params.", MINOR);
+            imInHivemind( FALSE );
+
+
+            return -2;
         }
 
-        irc_callbacks_t	callbacks;
-        irc_ctx_t ctx;
+        imInHivemind( FALSE );
 
-
-
-        //printf ("Usage: %s <server> <nick> <channel>\n", argv[0]);
-
-        memset (&callbacks, 0, sizeof(callbacks));
-
-        callbacks.event_connect = event_connect;
-        callbacks.event_join = event_join;
-        callbacks.event_nick = dump_event;
-        callbacks.event_quit = dump_event;
-        callbacks.event_part = dump_event;
-        callbacks.event_mode = dump_event;
-        callbacks.event_topic = dump_event;
-        callbacks.event_kick = dump_event;
-        callbacks.event_channel = event_channel;
-        callbacks.event_privmsg = event_privmsg;
-        callbacks.event_numeric = event_numeric;
-
-
-        callbacks.event_notice = dump_event;
-
-        callbacks.event_invite = dump_event;
-
-        callbacks.event_umode = dump_event;
-        callbacks.event_ctcp_rep = dump_event;
-        callbacks.event_ctcp_action = dump_event;
-        callbacks.event_unknown = dump_event;
-
-        /*
-        callbacks.event_dcc_chat_req = irc_event_dcc_chat;
-        callbacks.event_dcc_send_req = irc_event_dcc_send;
-        */
-
-
-        s = irc_create_session (&callbacks);
-
-        if ( !s ) {
-                printf ("Could not create session\n");
-                return 1;
-        }
-
-        ctx.channel = (char*) malloc( sizeof(char) * (strlen(chan) + 1) );
-        strcpy(ctx.channel,chan);
-
-        ctx.nick = "Imnothere";
-        irc_set_ctx (s, &ctx);
-
-        printf("Connecting to %s with port %d ...\n",server,port);
-
-        if ( irc_connect(s, server, port, 0, "Imnothere", 0, 0) ) {
-                printf ("Could not connect : %s\n\n", irc_strerror (irc_errno(s)));
-                return 1;
-        }
-
-        printf("Connected. Listening for !command messages ..\n");
-
-        irc_run (s);
-
+        return 0;
     }
     else {
-        loic_error("Bad Hivemind params.", MINOR);
 
-        return -2;
+        char* buffer = (char*) malloc( sizeof(char) * 512 );
+        sprintf(buffer, "Unknown host : %s", server);
+        loic_error(buffer, GRAVE);
+
+        return 1;
     }
-
-    return 0;
-
 }

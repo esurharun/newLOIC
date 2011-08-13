@@ -14,14 +14,17 @@ int main(int argc, char *argv[]) {
 
     init(); /* Use sockets > Windows */
 
-
+    g_type_init();
+    gdk_threads_init();
 
     gtk_init(&argc, &argv);
     gtk_rc_parse("gtkrc");
 
     build_window();
 
+    gdk_threads_enter();
     gtk_main();
+    gdk_threads_leave();
 
 
     end(); /* End of ' Use sockets > Windows ' */

@@ -6,11 +6,16 @@
     #include "const.h"
     #include "config.h"
 
+    #define G_THREADS_ENABLED
 
     #ifdef WIN32
+        #include <gdk/gdk.h>
         #include <gtk/gtk.h>
+        #include <glib.h>
     #elif defined (linux)
+        #include <gdk/gdk.h>
         #include <gtk/gtk.h>
+        #include <glib.h>
     #endif
 
 #ifdef SUPER_LOIC
@@ -24,6 +29,8 @@
 
     p_BOOL refresh_opts();
     p_BOOL refresh_infos();
+
+    void sim_push_fire_button();
 
 
 #endif

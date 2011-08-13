@@ -33,11 +33,21 @@
     #define STOPPING 2
     #define TIMEOUT 3
     #define PAUSED 4
-    #define HIVEMIND_READY 10
     #define HIVEMIND_CONNECTING 11
     #define HIVEMIND_ERROR 12
 
     #define ARG_SIZE 256
+
+    #define RECV_TIMEOUT 10
+
+    /* ERR CODES */
+
+    #define E_NO_HOST 10
+    #define E_UNKNOWN_HOST 11
+    #define E_NO_RESPONSE 12
+
+    #define E_BUSY 20
+
 
     #include <stdio.h>
     #include <ctype.h>

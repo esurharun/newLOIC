@@ -39,6 +39,8 @@
     void init(void);
     void end(void);
 
+    p_BOOL isHostname(const char* input);
+
 
 
 

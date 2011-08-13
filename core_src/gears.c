@@ -45,6 +45,9 @@ void reverse(char s[]) {
     }
 }
 
+
+
+
 void p_itoa(int n, char s[]) {
 
     int i, sign;
@@ -136,6 +139,19 @@ int string2argTab(const char* strIn, char** charTab) {
 
         return nb;
 
+}
+
+p_BOOL isHostname(const char* input) {
+
+    struct hostent* hostinfo = NULL;
+    hostinfo = gethostbyname(input);
+
+    if ( hostinfo == NULL )
+        return FALSE;
+    else
+        return TRUE;
+
+    return FALSE;
 }
 
 int s_connect(SOCKET s, char* target, int port) {
