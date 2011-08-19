@@ -107,6 +107,11 @@ typedef struct {
 } interface_t;
 
 typedef struct {
+    int value;
+    char* url;
+} mtarget_t;
+
+typedef struct {
         char*   target;
         char*   message;
         char*   subsite;
