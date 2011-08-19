@@ -111,6 +111,107 @@ int thread_canon() {
     return start_canon();
 }
 
+int setTarget_From_Hivemind_Line( const char* str_in ) {
+
+
+
+    char* str = (char*) malloc( sizeof(char) * (strlen(str_in) + 1)  );
+
+    strcpy(str,str_in);
+
+    printf("In : %s\n", str);
+
+    if ( strlen( str ) != 0 ) {
+
+        int nb_targets = 0;
+        char* ctargets_l[128];
+
+
+        char delim_target[] = ";";
+
+
+        char* tok_target = NULL;
+        tok_target = strtok( (char*) str, delim_target );
+
+        while ( tok_target != NULL ) {
+
+
+            ctargets_l[nb_targets] = (char*) malloc( sizeof(char) * (strlen(tok_target) + 1) );
+            strcpy( ctargets_l[nb_targets], tok_target );
+
+            nb_targets++;
+
+            tok_target = strtok( (char*) NULL, delim_target );
+
+        }
+
+        int i;
+
+        mtarget_t target_list[128];
+
+        char delim_pound[] = ",";
+
+        for (i=0; i<nb_targets; i++) {
+
+            char* temp_target = (char*) malloc( sizeof(char) * ( strlen(ctargets_l[i]) + 1 ) );
+            strcpy(temp_target, ctargets_l[i]);
+
+
+            int tp = 1;
+
+            char* temp_pound = NULL;
+            temp_pound = strtok( (char*) temp_target, delim_pound );
+
+            char* recorded_target = NULL;
+            if ( temp_pound != NULL ) {
+                tp = atoi( temp_pound );
+                recorded_target = strtok( (char*) NULL, delim_pound );
+            }
+
+            if ( tp == 0 && recorded_target == NULL ) {
+                tp = 1;
+                recorded_target = (char*) malloc( sizeof(char) * ( strlen(ctargets_l[i]) + 1 ) );
+                strcpy(recorded_target,ctargets_l[i]);
+            }
+
+
+
+            target_list[i].value = tp;
+
+            target_list[i].url = (char*) malloc( sizeof(char) * (strlen(recorded_target) + 1) );
+            strcpy( target_list[i].url, recorded_target );
+
+        }
+
+
+        for (i=0; i<nb_targets; i++) {
+            printf("%d: (%d) %s\n",i,target_list[i].value,target_list[i].url);
+        }
+
+        if ( nb_targets == 1 ) {
+            setTarget( target_list[0].url );
+        }
+        else {
+            int index = -1;
+
+            int list[nb_targets];
+            for (i=0; i<nb_targets; i++) {
+                list[i] = target_list[i].value;
+            }
+
+            index = select_from_list( list, nb_targets );
+            setTarget ( target_list[ index ].url  );
+        }
+
+
+    }
+    else
+        return 1;
+
+
+    return 0;
+}
+
 
 int config_from_args_irc(const char** arguments, int nb, int from) {
 
@@ -133,7 +234,8 @@ int config_from_args_irc(const char** arguments, int nb, int from) {
 
             // Check host ?
             if ( p_strcmpi(key,"TARGETIP") == 0 ) {
-                setTarget(value);
+
+                setTarget_From_Hivemind_Line( value );
             }
 
             else if ( p_strcmpi(key,"METHOD") == 0 ) {

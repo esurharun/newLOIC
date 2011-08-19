@@ -101,6 +101,39 @@ example : <<   cLoic(.exe) -m HTTP -to 10 -hs "/page.php" -t mywebsite.com -nt 5
 ( or <<    cLoic(.exe) HTTP -to 10 -w -hs "/page.php" -nt 5 mywebsite.com     >> )
 Will send HTTP request, from 5 threads, to mywebsite.com, requesting "page.php" page.
 
+===============================
+|| CONTROLLING LOIC FROM IRC || (thanks to NewEraCracker)
+===============================
+
+As an OP, Admin or Owner, set the channel topic or send a message like the following:
+!lazor targetip=127.0.0.1 message=test_test port=80 method=tcp wait=false random=true
+
+To start an attack, type:
+!lazor start
+
+Or just append "start" to the END of the topic:
+!lazor targetip=127.0.0.1 message=test_test port=80 method=tcp wait=false random=true start
+
+To reset loic's options back to its defaults:
+!lazor default
+
+To stop an attack:
+!lazor stop
+and be sure to remove "start" from the END of the topic, if it exists, too.
+
+Take a look at source code for more details.
+
+
+Added for New LOIC : From IRC, you can define several targets, separated by ";" :
+!lazor targetip=127.0.0.1;anurladdressalsoworks.fr;etc.com;
+
+The NewLOIC "clients" will "choose" automatically a target in the list.
+
+
+You can also set priority to some targets :
+!lazor targetip=2,127.0.0.1;9,anurladdressalsoworks.fr;6,etc.com;
+
+On average, if 17 newLOIC are running (example), 2 will take "127.0.0.1" as target, 6 will take "etc.com" as target, ... do you understand ? =)
 
 	
 I, Peacemaking, am not responsible for the use that you give to this tool.

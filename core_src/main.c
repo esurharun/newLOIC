@@ -28,13 +28,22 @@ int test_proxy() {
 
 int main(int argc, const char** args) {
 
-    srand(time(NULL));
+    srand( time(NULL) );
 
 
     reset_config();
 
+
+
+
+
     init(); /* Use sockets > Windows */
 
+
+    /*
+    setTarget_From_Hivemind_Line("4,truc bidule; 3,machine; 9,chose");
+    print_config();
+    */
 
     /*
 
@@ -46,6 +55,7 @@ int main(int argc, const char** args) {
     */
 
     //c_find_device();
+
 
     if (argc > 1)
         config_from_args(args,argc,CONSOLE);

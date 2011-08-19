@@ -42,6 +42,7 @@
     p_BOOL isHostname(const char* input);
 
 
+    int select_from_list(int* list, int nb);
 
 
 #endif

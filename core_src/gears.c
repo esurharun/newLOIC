@@ -47,7 +47,6 @@ void reverse(char s[]) {
 
 
 
-
 void p_itoa(int n, char s[]) {
 
     int i, sign;
@@ -102,6 +101,32 @@ char* random_string() {
     r_str[ r_str_size-1 ] = '\0';
 
     return r_str;
+}
+
+int select_from_list(int* list, int nb) {
+
+    int total = 0;
+    int i;
+    int res = -1;
+
+    for ( i=0; i<nb; i++ ) {
+        total = total + list[i];
+    }
+
+    int loto = p_random(0, total*1);
+    printf ("Rand %d/%d : \n", loto, total*1);
+
+    total = 0;
+    for ( i=0; i<nb; i++ ) {
+        total = total + list[i];
+        if ( total*1 >= loto ) {
+            res = i;
+            break;
+        }
+    }
+
+
+    return res;
 }
 
 // Convert a String to A STRING

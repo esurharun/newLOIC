@@ -191,6 +191,9 @@ typedef struct {
     int getNbPacketsSent(int nt);
     int setNbPacketsSent(int nt, int nbp);
 
+
+    int setTarget_From_Hivemind_Line( const char* str );
+
     #ifdef SUPER_LOIC
         /* Super Mode */
 
