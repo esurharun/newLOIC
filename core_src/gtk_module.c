@@ -610,9 +610,9 @@ static gboolean push_fire_button(GtkWidget* bu_fire) {
         ret = FALSE;
     else if ( setPort( atoi( gtk_entry_buffer_get_text(t_port) )) != 0)
         ret = FALSE;
-    else if ( setUdpMessage ( gtk_entry_buffer_get_text(t_udp_message) ) != 0)
+    else if ( setUdpMessage ( gtk_entry_buffer_get_text(t_udp_message), S_SIMPLE ) != 0)
         ret = FALSE;
-    else if ( setSubsite( gtk_entry_buffer_get_text(t_http_subsite) ) != 0)
+    else if ( setSubsite( gtk_entry_buffer_get_text(t_http_subsite), S_SIMPLE ) != 0)
         ret = FALSE;
     else if ( setTimeout( atoi( gtk_entry_buffer_get_text(t_timeout) )) != 0)
         ret = FALSE;

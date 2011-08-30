@@ -85,10 +85,7 @@
          #include "superCanon.h"
     #endif
 
-typedef struct {
-    u_char* pkt_data;
-    int size;
-} simple_pkt_t;
+
 
 typedef struct {
     p_BOOL configured;
@@ -111,10 +108,12 @@ typedef struct {
     char* url;
 } mtarget_t;
 
+
+
 typedef struct {
         char*   target;
-        char*   message;
-        char*   subsite;
+        string_list_t   message;
+        string_list_t   subsite;
         int     port;
         int     method;
         int      speed;
@@ -160,8 +159,8 @@ typedef struct {
     int setTarget(const char* input);
     int setPort(const int input);
     int setSpeed(int input);
-    int setUdpMessage(const char* input);
-    int setSubsite(const char* input);
+    int setUdpMessage(const char* input, u_char mode);
+    int setSubsite(const char* input, u_char mode);
     int setProtocol(const char* input);
     int setProtocoli(int proto);
     int setGzipEnabled(p_BOOL val);

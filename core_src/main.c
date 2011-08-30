@@ -3,6 +3,7 @@
 #include <time.h>
 
 
+
 int test_proxy() {
 
     SOCKET s = createSocket(TCP);
@@ -36,25 +37,8 @@ int main(int argc, const char** args) {
 
 
 
-
     init(); /* Use sockets > Windows */
 
-
-    /*
-    setTarget_From_Hivemind_Line("4,truc bidule; 3,machine; 9,chose");
-    print_config();
-    */
-
-    /*
-
-    char buffer[1024];
-    getWebPage("http://paste2.org/p/1481925",80,buffer,sizeof(buffer));
-    printf("F : %s\n",buffer);
-    printf("%d!!\n",strstr(buffer,"yle.css?11"));
-
-    */
-
-    //c_find_device();
 
 
     if (argc > 1)

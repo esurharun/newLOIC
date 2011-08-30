@@ -3,6 +3,7 @@
     #define H_GTK_MODULE_H
 
     #include <stdlib.h>
+    #include "gears.h"
     #include "const.h"
     #include "config.h"
 

@@ -103,6 +103,19 @@ char* random_string() {
     return r_str;
 }
 
+int draw_lines(char* chaine)
+{
+  int i;
+  for(i=0;chaine[i] != '\0';i++) {
+    if(chaine[i] == '\n' || chaine[i] == '\r')
+    {
+      chaine[i] = '\0';
+      return i + 1;
+    }
+  }
+  return i;
+}
+
 int select_from_list(int* list, int nb) {
 
     int total = 0;
@@ -233,6 +246,47 @@ void s_recv(SOCKET s, char* buffer, int size) {
 
 
 }
+
+string_list_t string_list_from_file( const char* path ) {
+
+    FILE* file = NULL;
+
+    file = fopen(path, "r");
+    char* buffer = (char*) malloc( sizeof(char) * MAX_STRING_SIZE );
+
+    string_list_t list;
+    list.type = S_MULTIPLE;
+    list.offset = 0;
+    list.nb = 0;
+    list.strings = (char**) malloc( MAX_STRING_SIZE * sizeof(char) * MAX_LIST_SIZE );
+
+
+    if (file != NULL) {
+
+
+        int i=0;
+        while ( fgets(buffer, MAX_STRING_SIZE, file) != NULL) {
+
+            draw_lines(buffer);
+            list.strings[i] = (char*) malloc( MAX_STRING_SIZE * sizeof(char) );
+            strcpy( list.strings[i], buffer );
+
+            i++;
+        }
+
+        list.nb = i;
+        fclose(file);
+
+        printf("%d lines set.\n", i);
+    }
+    else {
+        loic_error("File not found !", GRAVE);
+    }
+
+
+    return list;
+}
+
 
 char* p_host_from_url(char* url) {
 

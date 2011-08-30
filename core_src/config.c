@@ -253,7 +253,7 @@ int config_from_args_irc(const char** arguments, int nb, int from) {
             /* END NEW */
 
             else if ( p_strcmpi(key,"MESSAGE") == 0 ) {
-                setUdpMessage(value);
+                setUdpMessage(value, S_SIMPLE);
             }
 
             else if ( p_strcmpi(key,"WAIT") == 0  ) {
@@ -427,7 +427,15 @@ int config_from_args(const char** arguments, int nb, int from) {
 
             else if ( p_strcmpi(arguments[i],"--udp-message") == 0 || p_strcmpi(arguments[i],"-m") == 0  ) {
                 i++;
-                if ( i >= nb ||  setUdpMessage(arguments[i]) != 0 ) {
+                if ( i >= nb ||  setUdpMessage(arguments[i], S_SIMPLE) != 0 ) {
+
+                    loic_error("Syntax Error !",from);
+                }
+            }
+
+            else if ( p_strcmpi(arguments[i],"--udp-message-from-file") == 0 || p_strcmpi(arguments[i],"-mff") == 0  ) {
+                i++;
+                if ( i >= nb ||  setUdpMessage(arguments[i], S_MULTIPLE) != 0 ) {
 
                     loic_error("Syntax Error !",from);
                 }
@@ -435,7 +443,15 @@ int config_from_args(const char** arguments, int nb, int from) {
 
             else if ( p_strcmpi(arguments[i],"--http-subsite") == 0 || p_strcmpi(arguments[i],"-hs") == 0  ) {
                 i++;
-                if ( i >= nb ||  setSubsite(arguments[i]) != 0 ) {
+                if ( i >= nb ||  setSubsite(arguments[i], S_SIMPLE) != 0 ) {
+
+                    loic_error("Syntax Error !",from);
+                }
+            }
+
+            else if ( p_strcmpi(arguments[i],"--http-subsite-from-file") == 0 || p_strcmpi(arguments[i],"-hsff") == 0  ) {
+                i++;
+                if ( i >= nb ||  setSubsite(arguments[i], S_MULTIPLE) != 0 ) {
 
                     loic_error("Syntax Error !",from);
                 }
@@ -550,11 +566,21 @@ int reset_config() {
         main_config.status = EMPTY;
     }
 
-    lazor_config.message = (char*) malloc(sizeof(lazor_config.message)*1024);
-    strcpy(lazor_config.message,"hello");
+    lazor_config.message.offset = 0;
+    lazor_config.message.type = S_SIMPLE;
+    lazor_config.message.nb = 1;
+    lazor_config.message.strings = (char**) malloc( sizeof(char) * MAX_STRING_SIZE );
+    lazor_config.message.strings[0] = (char*) malloc( sizeof(char) * MAX_STRING_SIZE );
 
-    lazor_config.subsite = (char*) malloc(sizeof(lazor_config.subsite)*1024);
-    strcpy(lazor_config.subsite,"/");
+    lazor_config.subsite.offset = 0;
+    lazor_config.subsite.type = S_SIMPLE;
+    lazor_config.subsite.nb = 1;
+    lazor_config.subsite.strings = (char**) malloc( sizeof(char) * MAX_STRING_SIZE );
+    lazor_config.subsite.strings[0] = (char*) malloc( sizeof(char) * MAX_STRING_SIZE );
+
+    strcpy(lazor_config.message.strings[0],"hello");
+
+    strcpy(lazor_config.subsite.strings[0],"/");
 
     /* Super Mode */
     network_config.interface_index = 0;
@@ -593,7 +619,7 @@ int reset_config() {
 
 void print_config() {
         printf("\nLazor configuation : \n");
-        printf("\t- Target -> %s\n\t- Port -> %d\n\t- Method -> %d\n\t- Speed -> %d\n\t- Message -> %s\n\t- Wait -> %d\n\t- Random -> %d\n",lazor_config.target, lazor_config.port, lazor_config.method, lazor_config.speed, lazor_config.message, lazor_config.wait, lazor_config.random);
+        printf("\t- Target -> %s\n\t- Port -> %d\n\t- Method -> %d\n\t- Speed -> %d\n\t- Message -> %s\n\t- Wait -> %d\n\t- Random -> %d\n", getTarget(), getPort(), getProtocol(), getSpeed(), getUdpMessage(), isWaitEnabled(), isRandomEnabled());
         printf("\t- Threads -> %d\n\n",main_config.nb_threads);
 }
 
@@ -677,22 +703,62 @@ int setSpeed(int input) {
     return 1;
 }
 
-int setUdpMessage(const char* input) {
+int setUdpMessage(const char* input, u_char mode) {
 
-    if (input != NULL) {
-        strcpy(lazor_config.message,input);
-        return 0;
+    if ( mode == S_SIMPLE ) {
+
+        if (input != NULL) {
+
+
+            lazor_config.message.offset = 0;
+            lazor_config.message.type = S_SIMPLE;
+            lazor_config.message.nb = 1;
+            lazor_config.message.strings = (char**) malloc( sizeof(char) * MAX_STRING_SIZE );
+            lazor_config.message.strings[0] = (char*) malloc( sizeof(char) * MAX_STRING_SIZE );
+
+            strcpy(lazor_config.message.strings[0],input);
+
+            return 0;
+        }
+
+    }
+    else if ( mode == S_MULTIPLE ) {
+
+            lazor_config.message.type = S_MULTIPLE;
+            lazor_config.message = string_list_from_file( input );
+
+            return 0;
     }
 
     return 1;
 
 }
 
-int setSubsite(const char* input) {
+int setSubsite(const char* input, u_char mode) {
 
-    if (input != NULL) {
-        strcpy(lazor_config.subsite,input);
+    if ( mode == S_SIMPLE ) {
+
+        if (input != NULL) {
+
+            lazor_config.subsite.offset = 0;
+            lazor_config.subsite.type = S_SIMPLE;
+            lazor_config.subsite.nb = 1;
+            lazor_config.subsite.strings = (char**) malloc( sizeof(char) * MAX_STRING_SIZE );
+            lazor_config.subsite.strings[0] = (char*) malloc( sizeof(char) * MAX_STRING_SIZE );
+
+            strcpy(lazor_config.subsite.strings[0],input);
+
+            return 0;
+        }
+
+    }
+    else if ( mode == S_MULTIPLE ) {
+
+        lazor_config.subsite.type = S_MULTIPLE;
+        lazor_config.subsite = string_list_from_file( input );
+
         return 0;
+
     }
 
     return 1;
@@ -779,11 +845,64 @@ int getSpeed() {
 }
 
 char* getUdpMessage() {
-    return lazor_config.message;
+
+    if (lazor_config.message.type == S_SIMPLE) {
+        return lazor_config.message.strings[0];
+    }
+    else if ( lazor_config.message.type == S_MULTIPLE ) {
+
+        if ( isRandomEnabled() == FALSE ) {
+
+            if ( lazor_config.message.offset < lazor_config.message.nb ) {
+                lazor_config.message.offset++;
+            }
+            else {
+                lazor_config.message.offset = 0;
+
+            }
+        }
+        else {
+            lazor_config.message.offset = p_random(0, lazor_config.message.nb - 1);
+        }
+
+        return lazor_config.message.strings[ lazor_config.message.offset ];
+
+    }
+
+
+    return "";
 }
 
 char* getSubsite() {
-    return lazor_config.subsite;
+
+    if (lazor_config.subsite.type == S_SIMPLE) {
+        return lazor_config.subsite.strings[0];
+    }
+    else if ( lazor_config.subsite.type == S_MULTIPLE ) {
+
+        if ( isRandomEnabled() == FALSE ) {
+
+            if ( lazor_config.subsite.offset < lazor_config.subsite.nb ) {
+                lazor_config.subsite.offset++;
+            }
+            else {
+                lazor_config.subsite.offset = 0;
+
+            }
+        }
+        else {
+            lazor_config.subsite.offset = p_random(0, lazor_config.subsite.nb - 1);
+        }
+
+        int off = lazor_config.subsite.offset;
+        printf("to %d pos\n",off);
+
+        return lazor_config.subsite.strings[ off ];
+
+    }
+
+
+    return "";
 }
 
 int getProtocol() {

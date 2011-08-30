@@ -37,6 +37,8 @@
     #define HIVEMIND_ERROR 12
 
     #define ARG_SIZE 256
+    #define MAX_STRING_SIZE 2048
+    #define MAX_LIST_SIZE 1024
 
     #define RECV_TIMEOUT 10
 
@@ -48,6 +50,13 @@
 
     #define E_BUSY 20
 
+
+
+    /* String List */
+    #define S_SIMPLE 0
+    #define S_MULTIPLE 1
+
+    /******/
 
     #include <stdio.h>
     #include <ctype.h>

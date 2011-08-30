@@ -2,17 +2,30 @@
 
     #define H_GEARS_H
 
-
-
-
     #include "const.h"
     #include "math.h"
 
     #include <time.h>
 
+
+    typedef struct {
+        u_char* pkt_data;
+        int size;
+    } simple_pkt_t;
+
+    typedef struct {
+        char** strings;
+        int nb;
+        int offset;
+        u_char type;
+    } string_list_t;
+
+
     #ifdef GTK_GUI
         #include "gtk_module.h"
     #endif
+
+
 
     int s_connect(SOCKET s, char* target, int port);
     int s_send(SOCKET s, char* msg);
@@ -43,6 +56,6 @@
 
 
     int select_from_list(int* list, int nb);
-
+    string_list_t string_list_from_file( const char* path );
 
 #endif
