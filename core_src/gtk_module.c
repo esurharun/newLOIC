@@ -48,6 +48,11 @@ GtkEntryBuffer* t_http_subsite;
 
 GtkEntryBuffer* t_source_ip;
 
+GtkEntryBuffer* t_file_udpMessage;
+GtkEntryBuffer* t_file_httpSubsite;
+
+
+
 
 
 
@@ -119,6 +124,45 @@ static gboolean display_popup_l(const char* message) {
     return FALSE;
 
 }
+
+static gboolean fileChoose( GtkWidget* file_chooser, GtkWidget* other_entry_buffer ) {
+
+    gchar* uri = gtk_file_chooser_get_uri( GTK_FILE_CHOOSER(file_chooser) );
+    gtk_entry_buffer_set_text( GTK_ENTRY_BUFFER(other_entry_buffer), uri, strlen(uri) );
+
+    return FALSE;
+}
+
+static gboolean fileChange( GtkWidget* entry_buffer, GtkWidget* other_entry ) {
+
+    if ( gtk_entry_buffer_get_length( GTK_ENTRY_BUFFER(entry_buffer) ) < 1 ) {
+
+        gtk_widget_set_sensitive( other_entry, TRUE );
+
+        return TRUE;
+
+    }
+    else {
+
+        gtk_widget_set_sensitive( other_entry, FALSE );
+
+        return TRUE;
+    }
+
+    return FALSE;
+}
+
+static gboolean iText( GtkWidget* entry_buffer, guint position, gchar* chars, guint n_chars, GtkWidget* custom) {
+
+    return (fileChange(entry_buffer, custom));
+}
+
+static gboolean dText( GtkWidget* entry_buffer, guint position, guint n_chars, GtkWidget* custom) {
+
+    return (fileChange(entry_buffer, custom));
+}
+
+
 
 void display_popup(const char* message) {
 
@@ -596,7 +640,7 @@ static gboolean push_fire_button(GtkWidget* bu_fire) {
 
 
 
-    p_BOOL ret = FALSE;
+    p_BOOL ret = TRUE;
 
     g_idle_add( (GSourceFunc)lock_panels_fire_l, (gpointer) bu_fire);
 
@@ -610,15 +654,42 @@ static gboolean push_fire_button(GtkWidget* bu_fire) {
         ret = FALSE;
     else if ( setPort( atoi( gtk_entry_buffer_get_text(t_port) )) != 0)
         ret = FALSE;
-    else if ( setUdpMessage ( gtk_entry_buffer_get_text(t_udp_message), S_SIMPLE ) != 0)
-        ret = FALSE;
-    else if ( setSubsite( gtk_entry_buffer_get_text(t_http_subsite), S_SIMPLE ) != 0)
-        ret = FALSE;
     else if ( setTimeout( atoi( gtk_entry_buffer_get_text(t_timeout) )) != 0)
         ret = FALSE;
     else if ( setNbThreads( atoi( gtk_entry_buffer_get_text(t_nb_threads) )) != 0)
         ret = FALSE;
-    else {
+
+    if ( gtk_entry_buffer_get_length(t_file_udpMessage) > 0 ) {
+
+        char* buffer = (char*) malloc( sizeof(char) * (gtk_entry_buffer_get_length(t_file_udpMessage) + 1) );
+        strcpy(buffer,gtk_entry_buffer_get_text(t_file_udpMessage));
+        removeFilePrefix( buffer );
+
+        if ( setUdpMessage ( buffer, S_MULTIPLE ) != 0 ) {
+            ret = FALSE;
+        }
+    }
+    else if ( setUdpMessage ( gtk_entry_buffer_get_text(t_udp_message), S_SIMPLE ) != 0) {
+        ret = FALSE;
+    }
+
+
+    if ( gtk_entry_buffer_get_length(t_file_httpSubsite) > 0 ) {
+
+        char* buffer = (char*) malloc( sizeof(char) * (gtk_entry_buffer_get_length(t_file_httpSubsite) + 1) );
+        strcpy(buffer,gtk_entry_buffer_get_text(t_file_httpSubsite));
+        removeFilePrefix( buffer );
+
+
+        if ( setSubsite ( buffer, S_MULTIPLE ) != 0) {
+            ret = FALSE;
+        }
+    }
+    else if ( setSubsite ( gtk_entry_buffer_get_text(t_http_subsite), S_SIMPLE ) != 0) {
+        ret = FALSE;
+    }
+
+    if ( ret != FALSE ) {
 
         printf("Charging...\n");
 
@@ -680,9 +751,7 @@ static gboolean push_fire_button(GtkWidget* bu_fire) {
         }
 
     }
-
-
-    if ( ret == FALSE ) {
+    else {
         printf("Canceled\n");
         g_idle_add( (GSourceFunc)unlock_panels_fire_l, (gpointer) bu_fire);
 
@@ -720,15 +789,25 @@ p_BOOL setOptionPanel(int method) {
             l_cData = gtk_label_new(" TCP / UDP message :");
             e_cData = gtk_entry_new_with_buffer(t_udp_message);
             gtk_entry_set_width_chars( GTK_ENTRY(e_cData), 40);
-            cb_randCharsUDP = gtk_check_button_new_with_label("Append random chars ?");
+
+            GtkWidget* fcb_data = gtk_file_chooser_button_new( "From file", GTK_FILE_CHOOSER_ACTION_OPEN );
+            GtkWidget* fce_data = gtk_entry_new_with_buffer( t_file_udpMessage );
+
+
+            cb_randCharsUDP = gtk_check_button_new_with_label("Random Mode ?");
         GtkWidget* b_dataOpts = gtk_hbox_new( FALSE, 0 );
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), l_cData, FALSE, TRUE, 5 );
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), e_cData, FALSE, TRUE, 5 );
+
+        gtk_box_pack_start ( GTK_BOX(b_dataOpts), fcb_data, FALSE, TRUE, 5 );
+        gtk_box_pack_start ( GTK_BOX(b_dataOpts), fce_data, FALSE, TRUE, 5 );
+
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), cb_randCharsUDP, FALSE, TRUE, 5 );
 
         cb_waitForReplyUDP = gtk_check_button_new_with_label("Wait for Reply ?");
         GtkWidget* b_checkOpts = gtk_hbox_new( FALSE, 0 );
         gtk_box_pack_start ( GTK_BOX(b_checkOpts), cb_waitForReplyUDP, FALSE, TRUE, 5 );
+
 
 
         b_OptionsUDP = gtk_vbox_new( FALSE, 0 );
@@ -740,6 +819,9 @@ p_BOOL setOptionPanel(int method) {
 
         g_object_ref(b_OptionsUDP);
 
+        g_signal_connect( G_OBJECT(fcb_data), "selection-changed", G_CALLBACK(fileChoose), t_file_udpMessage );
+        g_signal_connect( G_OBJECT(t_file_udpMessage), "deleted-text", G_CALLBACK(dText), e_cData);
+        g_signal_connect( G_OBJECT(t_file_udpMessage), "inserted-text", G_CALLBACK(iText), e_cData);
 
 
 
@@ -753,7 +835,7 @@ p_BOOL setOptionPanel(int method) {
             l_cData = gtk_label_new(" TCP / UDP message :");
             e_cData = gtk_entry_new_with_buffer(t_udp_message);
             gtk_entry_set_width_chars( GTK_ENTRY(e_cData), 40);
-            cb_randCharsTCP = gtk_check_button_new_with_label("Append random chars ?");
+            cb_randCharsTCP = gtk_check_button_new_with_label("Random Mode ?");
         GtkWidget* b_dataOpts = gtk_hbox_new( FALSE, 0 );
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), l_cData, FALSE, TRUE, 5 );
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), e_cData, FALSE, TRUE, 5 );
@@ -783,10 +865,19 @@ p_BOOL setOptionPanel(int method) {
             l_httpSub = gtk_label_new(" HTTP URL Subsite :");
             e_httpSub = gtk_entry_new_with_buffer(t_http_subsite);
             gtk_entry_set_width_chars( GTK_ENTRY(e_httpSub),15);
-            cb_randCharsHTTP = gtk_check_button_new_with_label("Append random chars ?");
+
+            GtkWidget* fcb_httpSub = gtk_file_chooser_button_new( "From file", GTK_FILE_CHOOSER_ACTION_OPEN );
+            GtkWidget* fce_httpSub = gtk_entry_new_with_buffer( t_file_httpSubsite );
+
+
+            cb_randCharsHTTP = gtk_check_button_new_with_label("Random Mode ?");
         GtkWidget* b_dataOpts = gtk_hbox_new( FALSE, 0 );
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), l_httpSub, FALSE, TRUE, 5 );
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), e_httpSub, FALSE, TRUE, 5 );
+
+        gtk_box_pack_start ( GTK_BOX(b_dataOpts), fcb_httpSub, FALSE, TRUE, 5 );
+        gtk_box_pack_start ( GTK_BOX(b_dataOpts), fce_httpSub, FALSE, TRUE, 5 );
+
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), cb_randCharsHTTP, FALSE, TRUE, 5 );
 
             cb_useGzipHTTP = gtk_check_button_new_with_label("Use Gzip ?");
@@ -805,7 +896,9 @@ p_BOOL setOptionPanel(int method) {
         g_object_ref(b_OptionsHTTP);
 
 
-
+        g_signal_connect( G_OBJECT(fcb_httpSub), "selection-changed", G_CALLBACK(fileChoose), t_file_httpSubsite );
+        g_signal_connect( G_OBJECT(t_file_httpSubsite), "deleted-text", G_CALLBACK(dText), e_httpSub);
+        g_signal_connect( G_OBJECT(t_file_httpSubsite), "inserted-text", G_CALLBACK(iText), e_httpSub);
 
 
     }
@@ -818,7 +911,7 @@ p_BOOL setOptionPanel(int method) {
             l_httpSub = gtk_label_new(" HTTP URL Subsite :");
             e_httpSub = gtk_entry_new_with_buffer( t_http_subsite );
             gtk_entry_set_width_chars( GTK_ENTRY(e_httpSub),15 );
-            cb_randCharsSLOW_HTTP = gtk_check_button_new_with_label("Append random chars ?");
+            cb_randCharsSLOW_HTTP = gtk_check_button_new_with_label("Random Mode ?");
         GtkWidget* b_dataOpts = gtk_hbox_new( FALSE, 0 );
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), l_httpSub, FALSE, TRUE, 5 );
         gtk_box_pack_start ( GTK_BOX(b_dataOpts), e_httpSub, FALSE, TRUE, 5 );
@@ -1125,6 +1218,10 @@ GtkWidget* b_Status = NULL;
     t_http_subsite = gtk_entry_buffer_new("/",1);
 
     t_source_ip = gtk_entry_buffer_new("0.0.0.0",7);
+
+    t_file_udpMessage = gtk_entry_buffer_new("",0);
+    t_file_httpSubsite = gtk_entry_buffer_new("",0);
+
 
 
     /* Main Window */

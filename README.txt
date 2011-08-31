@@ -89,6 +89,10 @@ cLoic(.exe) method [ -m method ] [ -nt number_of_threads ] [ -s speed_in_percent
 -hs --http-subsite (in HTTP modes) : Target a specified page in the Website.
 (default : "/")
 
+-hsff --http-subsite-from-file (in HTTP modes) : Specify the file containing the subistes list.
+
+
+
 
 (following parameters are only availables in SuperLOIC version)
 
@@ -135,6 +139,8 @@ You can also set priority to some targets :
 
 On average, if 17 newLOIC are running (example), 2 will take "127.0.0.1" as target, 6 will take "etc.com" as target, ... do you understand ? =)
 
+08.30.11 :
+Added files support to define Http Subsites and UDP messages.
 	
 I, Peacemaking, am not responsible for the use that you give to this tool.
 You cannot blame me if you use this tool to attack servers you don't own and get caught.

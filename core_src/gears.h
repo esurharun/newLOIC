@@ -57,5 +57,6 @@
 
     int select_from_list(int* list, int nb);
     string_list_t string_list_from_file( const char* path );
+    p_BOOL removeFilePrefix( char* str );
 
 #endif

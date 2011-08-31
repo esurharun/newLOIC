@@ -247,6 +247,28 @@ void s_recv(SOCKET s, char* buffer, int size) {
 
 }
 
+p_BOOL removeFilePrefix( char* str ) {
+
+    char* buffer = (char*) malloc( (strlen(str) - 7) * sizeof(char) );
+
+    if ( strncmp (str, "file:///", 8 ) == 0) {
+
+        int i=0;
+        for (i=0; i<strlen(str)-7; i++ ) {
+            buffer[i] = str[i+8];
+        }
+
+        strcpy(str,buffer);
+
+        return TRUE;
+
+    }
+
+    return FALSE;
+
+
+}
+
 string_list_t string_list_from_file( const char* path ) {
 
     FILE* file = NULL;
