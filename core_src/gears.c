@@ -7,6 +7,11 @@ void loic_error(const char* message, int ind) {
     printf("%s\n",message);
 
 #ifdef GTK_GUI
+
+    #ifdef UXP
+        ind = MINOR;
+    #endif
+
     if ( ind == GRAVE ) {
         display_popup(message);
     }
