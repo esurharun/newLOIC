@@ -5,6 +5,8 @@
 void loic_error(const char* message, int ind) {
 
     printf("%s\n",message);
+    ind = ind;
+
 
 #ifdef GTK_GUI
 
