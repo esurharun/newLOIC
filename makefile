@@ -9,17 +9,18 @@ EXEC = bin/$(OSBINDIR)$(ONAME)$(SUFFIX)
 OBJ = obj/*.o
 
 TESTOS := $(shell echo %OS%)
+TESTOS := $(shell uname) 
 
-ifeq ($(TESTOS),Windows NT)
-	RM = del /q
-	RM = rm -rf
-	OS = Windows
-	OSBINDIR = win32/
-else
+ifeq ($(TESTOS),Linux)
 	UNAME := $(shell uname)
 	RM = rm -rf
 	OS = $(UNAME)
 	OSBINDIR = linux/
+else
+	RM = del /q
+	RM = rm -rf
+	OS = Windows
+	OSBINDIR = win32/
 endif
 
 ifeq ($(OS),Windows)
