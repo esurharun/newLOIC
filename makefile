@@ -6,7 +6,7 @@ ISGUI = yes
 CC = gcc
 CFLAGS = -W -Wall -v
 EXEC = bin/$(OSBINDIR)$(ONAME)$(SUFFIX)
-
+OBJ = obj/*.o
 
 
 ifeq ($(shell echo $PATH),$PATH)
@@ -32,7 +32,6 @@ else
 endif
 
 
-
 VARS = -D_REENTRANT
 LIBS = $(WINSOCKSLIB) -lpthread -Linclude/libircclient/lib/ -lircclient
 
@@ -41,8 +40,6 @@ GTK_INC = -Iinclude/gtk/include/atk-1.0 -Iinclude/gtk/include -Iinclude/gtk/incl
 
 SUPER_LIBS = -Linclude/libpcap/Lib $(PCAPWIN)
 SUPER_INC = -Iinclude/libpcap/Include
-
-
 
 ifeq ($(ISSUPER), yes)
 	SUPER_FLAGS = -DSUPER_LOIC $(SUPER_INC)
@@ -55,10 +52,6 @@ ifeq ($(ISGUI), yes)
 else
 	GTK_FLAGS = 
 endif
-
-
-OBJ = obj/*.o
-
 
 ifeq ($(ISGUI), yes)
 	ifeq ($(ISSUPER), yes)
