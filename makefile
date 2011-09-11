@@ -8,8 +8,7 @@ CFLAGS = -W -Wall -v
 EXEC = bin/$(OSBINDIR)$(ONAME)$(SUFFIX)
 OBJ = obj/*.o
 
-TESTOS := $(shell echo %OS%)
-TESTOS := $(shell uname) 
+TESTOS := $(shell uname)
 
 ifeq ($(TESTOS),Linux)
 	UNAME := $(shell uname)
