@@ -36,7 +36,7 @@ endif
 
 
 VARS = -D_REENTRANT
-LIBS = $(WINSOCKSLIB) $(MATHLIB)-lpthread -Linclude/libircclient/lib/ -lircclient
+LIBS = $(WINSOCKSLIB) $(MATHLIB) -lpthread -Linclude/libircclient/lib/ -lircclient
 
 GTK_LIBS = -Linclude/gtk/lib -lgobject-2.0 -lglib-2.0 -lgdk-win32-2.0 -lgtk-win32-2.0 -lgthread-2.0
 GTK_INC = -Iinclude/gtk/include/atk-1.0 -Iinclude/gtk/include -Iinclude/gtk/include/gdk-pixbuf-2.0 -Iinclude/gtk/include/cairo -Iinclude/gtk/include/pango-1.0 -Iinclude/gtk/include/glib-2.0 -Iinclude/gtk/include/gtk-2.0
