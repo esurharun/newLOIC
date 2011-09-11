@@ -1,6 +1,6 @@
 # Here you choose
 ISSUPER = no
-ISGUI = yes
+ISGUI = no
 ################
 
 CC = gcc
@@ -8,8 +8,9 @@ CFLAGS = -W -Wall -v
 EXEC = bin/$(OSBINDIR)$(ONAME)$(SUFFIX)
 OBJ = obj/*.o
 
+TESTOS = $(shell echo $PATH)
 
-ifeq ($(shell echo $PATH),$PATH)
+ifeq ($(TESTOS),$PATH)
 	RM = del /q
 	RM = rm -rf
 	OS = Windows
