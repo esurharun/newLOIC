@@ -10,7 +10,7 @@ OBJ = obj/*.o
 
 TESTOS = $(shell echo $PATH)
 
-ifeq ($(TESTOS),$PATH)
+ifeq ($(TESTOS),ATH)
 	RM = del /q
 	RM = rm -rf
 	OS = Windows
@@ -74,7 +74,8 @@ endif
 
 all: $(TARGET)
 	@echo $(UNAME)
-	@echo target is $(TARGET)________________________________________________________
+	@echo target was $(TARGET)________________________________________________________
+	@echo detection result was $(TESTOS)
 
 clean:
 	$(RM) obj/*.o
