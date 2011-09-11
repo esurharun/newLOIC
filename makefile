@@ -1,22 +1,46 @@
-CC = gcc
-CFLAGS = -W -Wall -v
-EXEC = bin/$(ONAME)$(SUFFIX)
-SUFFIX = .exe
-
-VARS = -D_REENTRANT
-LIBS = -lws2_32 -lpthread -Linclude/libircclient/lib/ -lircclient
-
-GTK_LIBS = -Linclude/gtk/lib -lgobject-2.0 -lglib-2.0 -lgdk-win32-2.0 -lgtk-win32-2.0 -lgthread-2.0
-GTK_INC = -Iinclude/gtk/include/atk-1.0 -Iinclude/gtk/include -Iinclude/gtk/include/gdk-pixbuf-2.0 -Iinclude/gtk/include/cairo -Iinclude/gtk/include/pango-1.0 -Iinclude/gtk/include/glib-2.0 -Iinclude/gtk/include/gtk-2.0
-
-SUPER_LIBS = -Linclude/libpcap/Lib -lwpcap
-SUPER_INC = -Iinclude/libpcap/Include
-
-
 # Here you choose
 ISSUPER = no
 ISGUI = yes
 ################
+
+CC = gcc
+CFLAGS = -W -Wall -v
+EXEC = bin/$(OSBINDIR)$(ONAME)$(SUFFIX)
+
+
+
+ifeq ($(shell echo $PATH),$PATH)
+	RM = del /q
+	RM = rm -rf
+	OS = Windows
+	OSBINDIR = win32/
+else
+	UNAME := $(shell uname)
+	RM = rm -rf
+	OS = $(UNAME)
+	OSBINDIR = linux/
+endif
+
+ifeq ($(OS),Windows)
+	SUFFIX = .exe
+	WINSOCKSLIB = -lws2_32
+	PCAPWIN = -lwpcap
+else
+	SUFFIX =
+	WINSOCKSLIB =
+	PCAPWIN = -lpcap
+endif
+
+
+
+VARS = -D_REENTRANT
+LIBS = $(WINSOCKSLIB) -lpthread -Linclude/libircclient/lib/ -lircclient
+
+GTK_LIBS = -Linclude/gtk/lib -lgobject-2.0 -lglib-2.0 -lgdk-win32-2.0 -lgtk-win32-2.0 -lgthread-2.0
+GTK_INC = -Iinclude/gtk/include/atk-1.0 -Iinclude/gtk/include -Iinclude/gtk/include/gdk-pixbuf-2.0 -Iinclude/gtk/include/cairo -Iinclude/gtk/include/pango-1.0 -Iinclude/gtk/include/glib-2.0 -Iinclude/gtk/include/gtk-2.0
+
+SUPER_LIBS = -Linclude/libpcap/Lib $(PCAPWIN)
+SUPER_INC = -Iinclude/libpcap/Include
 
 
 
@@ -34,32 +58,32 @@ endif
 
 
 OBJ = obj/*.o
-RM = rm
 
 
 ifeq ($(ISGUI), yes)
 	ifeq ($(ISSUPER), yes)
-		ONAME = SuperLoicGui.exe
+		ONAME = SuperLoicGui
 		TARGET = gui
 	else
-		ONAME = SimpleLoicGui.exe
+		ONAME = SimpleLoicGui
 		TARGET = simple_gui
 	endif
 else
 	ifeq ($(ISSUPER), yes)
-		ONAME = SuperLoic.exe
+		ONAME = SuperLoic
 		TARGET = cli
 	else
-		ONAME = SimpleLoic.exe
+		ONAME = SimpleLoic
 		TARGET = simple_console
 	endif
 endif
 
 all: $(TARGET)
+	@echo $(UNAME)
 	@echo target is $(TARGET)________________________________________________________
 
 clean:
-	$(RM) -rf obj/*.o
+	$(RM) obj/*.o
 	
 
 simple_console: clean core main.o
