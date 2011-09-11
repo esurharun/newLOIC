@@ -8,9 +8,9 @@ CFLAGS = -W -Wall -v
 EXEC = bin/$(OSBINDIR)$(ONAME)$(SUFFIX)
 OBJ = obj/*.o
 
-TESTOS = $(shell echo $PATH)
+TESTOS := $(shell echo %OS%)
 
-ifeq ($(TESTOS),ATH)
+ifeq ($(TESTOS),Windows NT)
 	RM = del /q
 	RM = rm -rf
 	OS = Windows
